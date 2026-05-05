@@ -23,9 +23,9 @@ class VoiceActivityDetector:
         self.pre_buffer = deque(maxlen=10)
 
         # Thresholds
-        self.start_threshold = 5
-        self.end_threshold = 10
-        self.energy_threshold = 500
+        self.start_threshold = 10
+        self.end_threshold = 15
+        self.energy_threshold = 1000
 
         # Safety
         self.max_speech_seconds = 10
