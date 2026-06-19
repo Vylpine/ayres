@@ -46,7 +46,7 @@ def search_liked(song):
                 for item in tracks:
                         track = item["track"]
                         if song.lower() in track["name"].lower():
-                                return track["uri"]
+                                return track
                 offset += 50
 
 def play_song(song):
@@ -70,8 +70,12 @@ def play_song(song):
                         }
         else:
                 sp.start_playback(
-                        uris=[liked_results]
+                        uris=[liked_results["uri"]]
                 )
+                return {
+                        "song": liked_results["name"],
+                        "artist": liked_results["artists"][0]["name"]
+                        }
 
 def play_playlist(query):
         playlists = sp.current_user_playlists()
@@ -115,25 +119,6 @@ client.send(
         (json.dumps(register_message) + "\n").encode()
 )
 
-buffer = ""
-
-while True:
-
-        data = client.recv(1024)
-
-        if not data:
-                print("Disconnected from Core")
-                break
-
-        buffer += data.decode()
-
-        while "\n" in buffer:
-
-                line, buffer = buffer.split("\n", 1)
-
-                message = json.loads(line)
-
-                handle_message(message)
 
 def handle_message(query):
         query_type = query["type"]
@@ -163,11 +148,40 @@ def handle_message(query):
                         "type": "success",
                         "data": {
                                 "command": query_type,
-                                "song": song_data["song"],
+                                "song": song_data,
                                 "artist": song_data["artist"]
                         }
         }
+        else:
+                response = {
+                        "source": "spotify",
+                        "target": "core",
+                        "type": "success",
+                        "data": {
+                                "command": query_type
+                        }
+                }
 
         client.send(
                 (json.dumps(response) + "\n").encode()
         )
+
+buffer = ""
+
+while True:
+
+        data = client.recv(1024)
+
+        if not data:
+                print("Disconnected from Core")
+                break
+
+        buffer += data.decode()
+
+        while "\n" in buffer:
+
+                line, buffer = buffer.split("\n", 1)
+
+                message = json.loads(line)
+
+                handle_message(message)

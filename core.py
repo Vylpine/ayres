@@ -59,7 +59,10 @@ def process_message(conn, message):
 
     target = message.get("target")
 
-    if target not in services:
+    if target == "core":
+        pass
+    
+    elif target not in services:
 
         print(
             f"Unknown target: {target}"

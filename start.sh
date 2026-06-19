@@ -10,4 +10,10 @@ sleep 1
 
 echo Starting spotify_service..
 
-python ./spotify_service.py
+python ./spotify_service.py &
+
+sleep 1
+
+echo Starting testing service...
+
+python ./request_test.py
