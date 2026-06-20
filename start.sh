@@ -14,6 +14,12 @@ python ./spotify_service.py &
 
 sleep 1
 
+echo Starting timer service...
+
+python ./time_service.py &
+
+sleep 1
+
 echo Starting testing service...
 
 python ./request_test.py

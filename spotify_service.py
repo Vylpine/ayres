@@ -143,7 +143,7 @@ def handle_message(query):
 
         if query_type == "play_song":
                 response = {
-                        "source": "spotify",
+                        "source": SERVICE_NAME,
                         "target": "core",
                         "type": "success",
                         "data": {
@@ -154,7 +154,7 @@ def handle_message(query):
         }
         else:
                 response = {
-                        "source": "spotify",
+                        "source": SERVICE_NAME,
                         "target": "core",
                         "type": "success",
                         "data": {
