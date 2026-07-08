@@ -1,0 +1,5 @@
+Requests should always be sent in JSON format:
+ -Source : who sent the request i.e. what service
+ -Target : who the request is supposed to go to i.e. what service should the Core forward it to
+ -Type : the request being made
+ -Data : contains sub-arguments for the specific request or function required

@@ -30,32 +30,45 @@ client.send(
         (json.dumps(register_message) + "\n").encode()
 )
 
+def send_message(target, msg_type, data):
+
+    message = {
+        "source": SERVICE_NAME,
+        "target": target,
+        "type": msg_type,
+        "data": data
+    }
+
+    client.send(
+        (json.dumps(message) + "\n").encode()
+    )
+
 def start_timer(duration):
     time.sleep(duration)
     print("Timer done!")
-    fin_message = {
-        "target": "ayres",
-        "source": SERVICE_NAME,
-        "type": "timer_done",
+    send_message(target="ayres",
+    source=SERVICE_NAME,
+    msg_type="timer_done",
+    data={
         "duration": duration
-    }
-    client.send(
-        (json.dumps(fin_message) + "\n").encode()
-    )
+    })
 
 def start_alarm(end_time):
     while True:
+        hour = now.hour
+        minute = now.minute
+
         if f"{hour}:{minute}" == end_time:
             print("Alarm done!")
-            fin_message = {
-                "target": "ayres",
-                "source": SERVICE_NAME,
-                "type": "alarm_done",
-                "end_time": end_time
-            }
-            client.send(
-                (json.dumps(fin_message) + "\n").encode()
+            send_message(
+                target="ayres",
+                source=SERVICE_NAME,
+                msg_type="alarm_done",
+                data={
+                    "end_time": end_time
+                }
             )
+            return
 
         else:
             time.sleep(30)
@@ -63,10 +76,11 @@ def start_alarm(end_time):
 def handle_message(query):
 
     query_type = query["type"]
+    query_data = query["data"]
 
     if query_type == "start_timer":
 
-        duration = query["duration"]
+        duration = query_data["duration"]
 
         threading.Thread(
             target=start_timer,

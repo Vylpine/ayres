@@ -60,7 +60,8 @@ def process_message(conn, message):
     target = message.get("target")
 
     if target == "core":
-        pass
+        print(message)
+        return
     
     elif target not in services:
 
