@@ -1,11 +1,17 @@
+
 import socket
 import numpy as np
 import torch
+import json
 
 from silero_vad import load_silero_vad
 
+
 HOST = "127.0.0.1"
 PORT = 6000
+
+STT_HOST = "127.0.0.1"
+STT_PORT = 6100
 
 SAMPLE_RATE = 16000
 
@@ -18,17 +24,38 @@ STOP_THRESHOLD = 0.20
 START_FRAMES = 3
 STOP_FRAMES = 10
 
+
+# -------------------------
+# Audio connection
+# -------------------------
+
 client = socket.socket(
     socket.AF_INET,
     socket.SOCK_STREAM
 )
 
-client.connect((HOST, PORT))
+client.connect(
+    (HOST, PORT)
+)
+
+
+# -------------------------
+# VAD model
+# -------------------------
 
 model = load_silero_vad()
+
 model.reset_states()
 
-sample_buffer = np.array([], dtype=np.float32)
+
+# -------------------------
+# VAD state
+# -------------------------
+
+sample_buffer = np.array(
+    [],
+    dtype=np.float32
+)
 
 currently_speaking = False
 
@@ -36,13 +63,52 @@ speech_counter = 0
 silence_counter = 0
 
 
-def recv_exactly(sock, n):
+# -------------------------
+# STT connection
+# -------------------------
+
+stt_client = socket.socket(
+    socket.AF_INET,
+    socket.SOCK_STREAM
+)
+
+stt_client.connect(
+    (STT_HOST, STT_PORT)
+)
+
+
+# -------------------------
+# Send VAD event
+# -------------------------
+
+def send_event(event_type):
+
+    message = {
+        "source": "vad",
+        "target": "stt",
+        "type": event_type
+    }
+
+    data = (
+        json.dumps(message) + "\n"
+    ).encode()
+
+    stt_client.sendall(data)
+
+
+# -------------------------
+# Audio receiving
+# -------------------------
+
+def recv_exactly(sock, amount):
 
     data = b""
 
-    while len(data) < n:
+    while len(data) < amount:
 
-        packet = sock.recv(n - len(data))
+        packet = sock.recv(
+            amount - len(data)
+        )
 
         if not packet:
             return None
@@ -54,22 +120,41 @@ def recv_exactly(sock, n):
 
 def receive_frame():
 
-    length_bytes = recv_exactly(client, 4)
+    length_bytes = recv_exactly(
+        client,
+        4
+    )
 
     if length_bytes is None:
         return None
 
-    length = int.from_bytes(length_bytes, "big")
+    length = int.from_bytes(
+        length_bytes,
+        "big"
+    )
 
-    return recv_exactly(client, length)
+    return recv_exactly(
+        client,
+        length
+    )
 
+
+# -------------------------
+# Main VAD loop
+# -------------------------
+
+print("VAD service started")
 
 while True:
 
     frame = receive_frame()
 
     if frame is None:
-        print("Audio service disconnected")
+
+        print(
+            "Audio service disconnected"
+        )
+
         break
 
     samples = np.frombuffer(
@@ -90,26 +175,40 @@ while True:
 
         sample_buffer = sample_buffer[HOP_SIZE:]
 
-        audio_tensor = torch.from_numpy(chunk)
+        audio_tensor = torch.from_numpy(
+            chunk
+        )
 
         confidence = model(
             audio_tensor,
             SAMPLE_RATE
         ).item()
 
-        print(f"{confidence:.2f}")
+
+
+        # -------------------------
+        # Speech detection
+        # -------------------------
 
         if confidence >= START_THRESHOLD:
 
             speech_counter += 1
             silence_counter = 0
 
+
         elif confidence <= STOP_THRESHOLD:
 
             silence_counter += 1
             speech_counter = 0
 
-        # Between thresholds: leave counters unchanged
+
+        # Between thresholds:
+        # leave counters unchanged
+
+
+        # -------------------------
+        # Speech started
+        # -------------------------
 
         if (
             not currently_speaking
@@ -120,7 +219,18 @@ while True:
 
             speech_counter = 0
 
-            print("Speech started")
+            print(
+                "Speech started"
+            )
+
+            send_event(
+                "speech_start"
+            )
+
+
+        # -------------------------
+        # Speech ended
+        # -------------------------
 
         elif (
             currently_speaking
@@ -131,4 +241,10 @@ while True:
 
             silence_counter = 0
 
-            print("Speech ended")
+            print(
+                "Speech ended"
+            )
+
+            send_event(
+                "speech_end"
+            )
