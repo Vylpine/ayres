@@ -26,6 +26,12 @@ python ./audio_input.py &
 
 sleep 1
 
+echo Starting STT.service...
+
+python ./stt_service.py &
+
+sleep 1
+
 echo starting voice_detection.service...
 
 python ./voice-detection.py &
