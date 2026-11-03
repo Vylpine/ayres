@@ -34,10 +34,16 @@ sleep 1
 
 echo starting voice_detection.service...
 
-python ./voice-detection.py &
+python ./voice_detection.py &
+
+sleep 1
+
+echo Starting response.service...
+
+python ./response_service.py
 
 sleep 1
 
 echo Starting testing service...
 
-python ./request_test.py
+# python ./request_test.py

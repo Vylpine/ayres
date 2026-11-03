@@ -16,6 +16,10 @@ SAMPLE_RATE = 16000
 
 MODEL_SIZE = "base"
 
+CORE = "127.0.0.1"
+CORE_PORT = 5000
+
+SERVICE_NAME = "stt"
 
 # -------------------------
 # STT state
@@ -73,6 +77,26 @@ vad_client, addr = vad_server.accept()
 
 print(f"VAD connected: {addr}")
 
+core_client = socket.socket(
+    socket.AF_INET,
+    socket.SOCK_STREAM
+)
+
+print("Waiting for core..")
+
+core_client.connect((CORE, CORE_PORT))
+
+print("Core connected!")
+
+register_message = {
+        "type": "register",
+        "service": SERVICE_NAME
+}
+
+core_client.send(
+        (json.dumps(register_message) + "\n").encode()
+)
+
 
 # -------------------------
 # Whisper processing
@@ -112,6 +136,13 @@ def process_audio():
 
     if text:
         print(f"STT: {text}")
+        message = {
+            "source": SERVICE_NAME,
+            "target": "response",
+            "type": "transcript",
+            "data": text
+        }
+
 
 
 # -------------------------
@@ -233,7 +264,6 @@ def receive_frame():
         audio_client,
         length
     )
-
 
 # -------------------------
 # Main audio loop
