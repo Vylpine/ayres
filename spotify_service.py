@@ -6,21 +6,21 @@ import socket
 SERVICE_NAME = "spotify"
 
 scope = (
-    "user-read-playback-state "
-    "user-modify-playback-state "
-    "user-read-currently-playing "
-    "user-read-recently-played "
-    "user-top-read "
-    "user-library-read "
-    "user-library-modify "
-    "playlist-read-private "
-    "playlist-read-collaborative "
-    "playlist-modify-private "
-    "playlist-modify-public "
-    "user-follow-read "
-    "user-follow-modify "
-    "user-read-private "
-    "user-read-email"
+        "user-read-playback-state "
+        "user-modify-playback-state "
+        "user-read-currently-playing "
+        "user-read-recently-played "
+        "user-top-read "
+        "user-library-read "
+        "user-library-modify "
+        "playlist-read-private "
+        "playlist-read-collaborative "
+        "playlist-modify-private "
+        "playlist-modify-public "
+        "user-follow-read "
+        "user-follow-modify "
+        "user-read-private "
+        "user-read-email"
 )
 with open("credentials.json", "r") as file:
         credentials = json.load(file)
@@ -121,16 +121,16 @@ client.send(
 
 def send_message(target, msg_type, data):
 
-    message = {
-        "source": SERVICE_NAME,
-        "target": target,
-        "type": msg_type,
-        "data": data
-    }
+        message = {
+                "source": SERVICE_NAME,
+                "target": target,
+                "type": msg_type,
+                "data": data
+        }
 
-    client.send(
-        (json.dumps(message) + "\n").encode()
-    )
+        client.send(
+                (json.dumps(message) + "\n").encode()
+        )
 
 def handle_message(query):
         query_type = query["type"]

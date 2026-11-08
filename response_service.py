@@ -26,6 +26,10 @@ client.send(
 
 buffer = ""
 
+def handle_message(message):
+
+        print(message["data"])
+
 while True:
 
         data = client.recv(1024)
@@ -43,7 +47,3 @@ while True:
                 message = json.loads(line)
 
                 handle_message(message)
-
-
-def handle_message(message):
-        print(message)

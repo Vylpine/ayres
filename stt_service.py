@@ -135,13 +135,18 @@ def process_audio():
     )
 
     if text:
-        print(f"STT: {text}")
         message = {
             "source": SERVICE_NAME,
             "target": "response",
             "type": "transcript",
             "data": text
         }
+        
+        data = (
+            json.dumps(message) + "\n"
+        ).encode()
+
+        core_client.send(data)
 
 
 
