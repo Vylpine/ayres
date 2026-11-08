@@ -1,3 +1,3 @@
-- create VAD [x]
-- integrate intent parser [ ]
-- feed speech to STT [ ]
+- [x] create VAD
+- [ ] integrate intent parser
+- [ ] feed speech to STT
